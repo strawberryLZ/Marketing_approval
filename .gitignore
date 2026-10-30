@@ -1,0 +1,15 @@
+# 运行时凭据和审计日志不得进入源码仓库或静态发布包。
+config.json
+runtime/
+*.log
+*.pem
+*.key
+*.pfx
+*.p12
+*.bak
+*.backup
+*.sql
+node_modules/
+outputs/
+tmp/
+data-analysis/

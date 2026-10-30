@@ -1,0 +1,40 @@
+const assert = require('assert');
+const fs = require('fs');
+
+const app = fs.readFileSync(require.resolve('../app.js'), 'utf8');
+const server = fs.readFileSync(require.resolve('../serve.js'), 'utf8');
+const store = fs.readFileSync(require.resolve('../business-store.js'), 'utf8');
+const html = fs.readFileSync(require.resolve('../index.html'), 'utf8');
+
+assert.match(html, /data-view="price-adjust"/, '必须提供统一调价入口');
+assert.ok(app.includes('统一调价原因 <em>必填</em>'), '统一调价原因必须只在申请单层填写一次');
+assert.match(app, /审批通过后.*写入全平台调价表/, '调价页必须明确通过后写表');
+assert.match(app, /不创建日历/, '调价页必须明确不创建日历');
+assert.match(app, /priceAdjustFilteredProducts/, '统一调价必须使用独立筛选结果');
+assert.match(app, /id="pa-select-all"/, '统一调价必须支持按当前筛选结果全选');
+assert.match(app, /class="pick-list" id="pa-pick-list"/, '统一调价选品必须复用手工填价的勾选列表样式');
+assert.match(app, /class="application-sheet price-adjust-sheet"/, '统一调价必须使用全宽申请信息布局');
+assert.match(app, /class="price-adjust-workspace"/, '统一调价必须在全宽申请页内保留选品与填价工作区');
+assert.match(app, /class="application-form-grid pa-reason-grid"/, '统一调价原因必须使用统一申请表单控件');
+assert.match(app, /isPriceAdjustment: true/, '统一调价申请必须有明确类型标记');
+assert.match(app, /value="spu-uniform"/, '统一调价必须提供 SPU 同价方式');
+assert.match(app, /value="sku-specific"/, '统一调价必须提供 SKU 分别调价方式');
+assert.match(app, /data-pa-mode/, '提交前必须保存每个 SPU 的调价方式选择');
+assert.match(app, /请确定 .*SPU 同价或 SKU 分别调价/, '提交前必须阻止未确认调价方式的 SPU');
+assert.match(app, /data-pa-sku-target/, 'SKU 分别调价必须逐 SKU 填写目标零售价');
+assert.match(app, /'SKU编码': sku\.skuCode/, '审批明细必须保留 SKU 编码');
+assert.match(app, /'调价方式': line\.pricingMode/, '审批明细必须保留调价方式');
+assert.match(app, /fileName: '统一调价明细_'/, '调价审批附件必须是专用明细');
+assert.match(app, /统一调价明细_/, '调价审批在线明细必须使用专用名称');
+assert.match(store, /if \(app\.isPriceAdjustment === true\) continue;/, '统一调价不得写入活动历史价格参考');
+assert.match(server, /triggerPriceAdjustmentForPassed\(processInstanceId\)/, '审批通过必须触发统一调价写表');
+assert.match(server, /\/v1\.0\/notable\/bases\//, '必须调用钉钉 AI 表格写入接口');
+assert.match(server, /await verifyPriceAdjustmentSource\(application\)/, '写入前必须核对当前源表零售价');
+assert.match(server, /'SKU编码': String\(sku\.skuCode/, '同步表记录必须保留 SKU 编码');
+assert.match(server, /'调价方式': mode/, '同步表记录必须保留调价方式');
+assert.match(server, /PRICE_ADJUSTMENT_WRITE_BATCH_SIZE/, 'SKU 展开后的同步记录必须按批写入');
+assert.match(server, /priceAdjustmentSourceValue\(matching, productMap, 'retailPrice'\)/, '服务端必须按 SKU 核对源表零售价');
+assert.match(server, /price-adjustment-no-calendar/, '统一调价不得创建日历');
+assert.match(store, /markPriceAdjustmentSyncResult/, '写表结果必须在企业申请留痕');
+
+console.log('price adjustment approval-to-table sync checks passed');

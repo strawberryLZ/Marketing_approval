@@ -1,0 +1,11 @@
+/var/log/marketing-activity/*.log {
+    daily
+    rotate 180
+    missingok
+    notifempty
+    compress
+    delaycompress
+    dateext
+    create 0640 marketing-activity marketing-activity
+    su marketing-activity marketing-activity
+}
