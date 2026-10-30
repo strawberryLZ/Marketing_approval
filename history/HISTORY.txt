@@ -5,3 +5,4 @@
 f54364fa661b15aefb3cbbb34daa70f8e52ce0aa | 2026-10-12 | feat: publish marketing activity management system
 a3717614b1de30ce03c03d60a9955578cd179987 | 2026-10-12 | feat: 同步营销活动管理应用 V1.2 完整版本
 22cb369419b9f13921ca0a45b0aaf57b3f4f8e8f | 2026-10-13 | feat: 更新应用逻辑、上传模块及样式优化
+e0ed1ce61278937738ab204183edd48df38e1f0a | 2026-10-13 | feat: stabilize DingTalk session and complete activity workflow
