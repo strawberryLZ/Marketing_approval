@@ -1,0 +1,202 @@
+﻿﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>营销活动管理系统 · 高保真原型</title>
+<link rel="stylesheet" href="styles.css?v=20">
+</head>
+<body>
+  <!-- 顶部栏 -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">营销</div>
+      <div class="brand-text">
+        <h1>营销活动管理系统</h1>
+        <span>跨平台价格联查 · 申请审查 · 记录归档</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <span class="avatar">惜</span>
+        <div class="user-meta">
+          <b>惜君</b>
+          <small>运营 · 电商部</small>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主导航 -->
+  <nav class="tabs">
+    <button class="tab active" data-view="apply">
+      <span class="tab-ico">＋</span>活动申请
+    </button>
+    <button class="tab" data-view="query">
+      <span class="tab-ico">🔍</span>价格查询
+    </button>
+    <button class="tab" data-view="approval">
+      <span class="tab-ico">✓</span>审批跟踪
+      <span class="badge" id="approval-badge">0</span>
+    </button>
+  </nav>
+
+  <main class="stage">
+    <!-- ========== 视图：活动申请 ========== -->
+    <section class="view active" id="view-apply">
+      <div class="layout">
+        <!-- 左：申请信息 -->
+        <aside class="panel form-panel">
+          <h2 class="panel-title">申请信息</h2>
+          <div class="field">
+            <label>活动平台</label>
+            <select id="f-platform">
+              <option value="京东">京东</option>
+              <option value="天猫">天猫</option>
+              <option value="抖音">抖音</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>活动店铺</label>
+            <select id="f-store"></select>
+          </div>
+          <div class="field">
+            <label>活动类型</label>
+            <select id="f-activity"></select>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>开始时间</label>
+              <input id="f-start" type="date">
+            </div>
+            <div class="field">
+              <label>结束时间</label>
+              <input id="f-end" type="date">
+            </div>
+          </div>
+          <div class="rule-hint" id="rule-hint"></div>
+          <div class="cost-form" id="cost-form"></div>
+
+          <div class="divider"></div>
+          <h2 class="panel-title">选择商品</h2>
+          <div class="search-box">
+            <input id="f-search" type="text" placeholder="搜索商品名 / 款号 / 款式简称">
+          </div>
+          <div class="filter-grid">
+            <select id="fl-season"></select>
+            <select id="fl-pos"></select>
+            <select id="fl-grade"></select>
+            <select id="fl-gender"></select>
+          </div>
+          <div class="pick-toolbar">
+            <button class="btn ghost sm" id="btn-sel-all">全选当前筛选结果</button>
+          </div>
+          <div class="pick-list" id="pick-list"></div>
+          <div class="pick-foot">
+            <span id="pick-count">已选 0 个 SPU</span>
+          </div>
+        </aside>
+
+        <!-- 右：明细填价 -->
+        <div class="panel detail-panel">
+          <div class="detail-head">
+            <h2 class="panel-title">活动明细 · 填价</h2>
+            <div class="detail-actions">
+              <button class="btn ghost sm" id="btn-expand">展开全部</button>
+              <button class="btn ghost" id="btn-clear">清空</button>
+              <button class="btn primary" id="btn-submit">提交审批</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="grid" id="apply-table">
+              <thead>
+                <tr>
+                  <th>SPU / 颜色 / SKU</th>
+                  <th>吊牌价</th>
+                  <th>零售价</th>
+                  <th>建议最低价</th>
+                  <th>历史最低价</th>
+                  <th>库存</th>
+                  <th>申请价</th>
+                  <th>折扣</th>
+                  <th>校验</th>
+                </tr>
+              </thead>
+              <tbody id="apply-tbody">
+                <tr class="empty-row"><td colspan="9">从左侧筛选并勾选 SPU 后，此处按 SPU → 颜色 → SKU 三级展开填价</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="summary-bar" id="summary-bar"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 视图：价格查询 ========== -->
+    <section class="view" id="view-query">
+      <div class="panel">
+        <h2 class="panel-title">跨平台价格联查</h2>
+        <div class="query-bar">
+          <input id="q-input" type="text" placeholder="输入商品名 / 款号，如 袋鼠裤 / FBMCS1">
+          <button class="btn primary" id="q-btn">查询</button>
+        </div>
+        <div id="q-result"></div>
+      </div>
+    </section>
+
+    <!-- ========== 视图：审批跟踪 ========== -->
+    <section class="view" id="view-approval">
+      <div class="panel">
+        <h2 class="panel-title">审批跟踪</h2>
+        <div class="filter-row" id="ap-filter">
+          <button class="chip active" data-st="all">全部</button>
+          <button class="chip" data-st="审批中">审批中</button>
+          <button class="chip" data-st="已通过">已通过</button>
+          <button class="chip" data-st="未通过">未通过</button>
+          <button class="chip" data-st="草稿">草稿</button>
+        </div>
+        <div class="table-wrap">
+          <table class="grid">
+            <thead>
+              <tr>
+                <th>申请单号</th><th>平台 / 店铺</th><th>活动类型</th>
+                <th>SKU 数</th><th>时间</th><th>状态</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="ap-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 抽屉：申请单详情 / 审批 -->
+  <div class="drawer-mask" id="drawer-mask"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-head">
+      <h3 id="drawer-title">申请单详情</h3>
+      <button class="drawer-close" id="drawer-close">✕</button>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+  </div>
+
+  <!-- 弹窗 -->
+  <div class="modal-mask" id="modal-mask">
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <footer class="foot">
+    高保真原型 · 数据源：跨平台活动规则清单.xlsx · 历史活动记录与库存为演示数据 · 钉钉审批为模拟流程
+  </footer>
+
+  <script src="data.js?v=21"></script>
+  <script src="products_seed.js?v=21"></script>
+  <script src="xlsx.full.min.js?v=21"></script>
+  <script src="sample-data.js?v=21"></script>
+  <script src="datasource.js?v=21"></script>
+  <script src="app.js?v=21"></script>
+  <script src="upload.js?v=21"></script>
+</body>
+</html>
