@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>活动申请上传入口 · 独立拼接原型 v1</title>
+<link rel="stylesheet" href="proto.css?v=9">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">⬆</span>
+    <div>
+      <h1>活动申请 · 上传解析入口</h1>
+      <p class="sub">独立功能完善拼接版本（原型，未与主系统合并）· 数据源：真实活动表 8 份 + 产品底表种子 167 SPU</p>
+    </div>
+  </div>
+  <div class="stepbar" id="stepbar"></div>
+</header>
+
+<main class="wrap">
+  <!-- ① 上传 -->
+  <section class="card" id="sec-upload">
+    <h2>① 上传活动原表</h2>
+    <div class="drop" id="drop">
+      <p class="big">拖拽 / 点击上传各平台活动 Excel（.xlsx）</p>
+      <p class="tip">支持：天猫 / 京东 / 抖音 / 私域 手工活动表；解析后进入「申请信息」确认</p>
+      <input type="file" id="file" accept=".xlsx,.xls" hidden>
+      <button class="btn primary" id="btn-file">选择文件</button>
+    </div>
+    <div class="samples">
+      <h3>离线样例（真实上传表转换，点击直接载入）</h3>
+      <div class="chips" id="sample-chips"></div>
+    </div>
+  </section>
+
+  <!-- ② 申请信息 -->
+  <section class="card hidden" id="sec-apply">
+    <h2>② 申请信息 <span class="tag" id="src-file"></span></h2>
+    <p class="desc">从上传表自动解析活动级字段，可直接修改；必填项为空将标红并阻止进入下一步。</p>
+    <div class="grid2" id="apply-form"></div>
+    <div class="row-end">
+      <button class="btn" id="btn-back-upload">← 返回上传（传错文件可重传）</button>
+      <button class="btn primary" id="btn-to-pick">下一步：选择商品 →</button>
+    </div>
+  </section>
+
+  <!-- ③ 选择商品 -->
+  <section class="card hidden" id="sec-pick">
+    <h2>③ 选择商品（SPU→SKU 映射与校验）</h2>
+    <p class="desc hidden" id="pick-tip">⚙ 本步骤支持<b>二次修订</b>：可直接改选/追加匹配 SPU、修订活动价与到手价、删除错误行、对未匹配项重新匹配；修订完成后再生成标准明细。</p>
+    <div class="metrics" id="pick-metrics"></div>
+    <div id="unmatched-alert"></div>
+    <div class="tbl-wrap"><table class="tbl" id="pick-tbl"></table></div>
+    <div class="row-end">
+      <button class="btn" id="btn-back-apply">← 上一步</button>
+      <button class="btn primary" id="btn-to-std">生成标准活动明细 →</button>
+    </div>
+  </section>
+
+  <!-- ④ 标准表输出 -->
+  <section class="card hidden" id="sec-std">
+    <h2>④ 标准活动明细（SKU 级）<span class="confirm-badge">⚠ 请运营逐项核对并确认最终信息，确认无误后方可提交审批</span></h2>
+    <div class="metrics" id="std-metrics"></div>
+    <div class="row-end" style="margin-bottom:10px">
+      <button class="btn" id="btn-back-pick">← 上一步</button>
+      <button class="btn" id="btn-csv">下载标准表 CSV</button>
+      <button class="btn warn" id="btn-csv-err">下载异常清单 CSV</button>
+    </div>
+    <div class="tbl-wrap tall"><table class="tbl" id="std-tbl"></table></div>
+  </section>
+</main>
+
+<div class="modal-mask hidden" id="modal-mask">
+  <div class="modal" id="modal">
+    <h3 id="modal-title"></h3>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+
+<script src="../products_seed.js"></script>
+<script src="xlsx.full.min.js"></script>
+<script src="sample-data.js"></script>
+<script src="proto.js?v=14"></script>
+</body>
+</html>

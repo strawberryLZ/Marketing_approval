@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>钉钉应用登录 · 营销活动管理系统</title>
+<style>
+  :root { --blue:#2f6bff; --line:#e6eaf0; --text:#1f2733; --muted:#6b7686; }
+  * { box-sizing:border-box; } body { margin:0; min-height:100vh; display:grid; place-items:center; background:#f4f6f9; color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+  .card { width:min(440px,calc(100vw - 32px)); padding:40px; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:0 12px 36px rgba(31,39,51,.08); text-align:center; }
+  .mark { width:54px; height:54px; margin:0 auto 18px; border-radius:15px; display:grid; place-items:center; background:linear-gradient(135deg,#2f6bff,#7c3aed); color:#fff; font-weight:700; }
+  h1 { margin:0 0 10px; font-size:22px; } p { margin:0; color:var(--muted); line-height:1.7; } #message { min-height:24px; margin:18px 0 0; color:#c2410c; font-size:14px; }
+  button { width:100%; margin-top:20px; padding:12px 18px; border:0; border-radius:10px; background:var(--blue); color:#fff; font:inherit; font-weight:700; cursor:pointer; } button:hover { background:#2458dc; }
+  .hint { margin-top:16px; font-size:13px; } a { color:var(--blue); }
+</style>
+</head>
+<body>
+  <main class="card" aria-labelledby="title">
+    <div class="mark">营销</div>
+    <h1 id="title">请在钉钉应用内打开</h1>
+    <p>系统仅支持钉钉应用内免登，识别当前企业成员后自动进入营销活动管理系统。</p>
+    <div id="message" role="status"></div>
+    <button id="login" type="button">重新识别当前钉钉账号</button>
+    <p class="hint">请从 <a href="https://clsp.flipbeltchina.com/">clsp.flipbeltchina.com</a> 进入，不要使用服务器 IP 地址或 8760 端口。</p>
+  </main>
+  <script>
+    const message = document.getElementById('message');
+    const loginButton = document.getElementById('login');
+    const error = new URLSearchParams(location.search).get('error');
+    const errors = { expired: '本次登录已失效，请重新发起登录。', denied: '你已取消钉钉授权，可再次尝试。', missing_code: '钉钉未返回授权信息，请重新登录。', failed: '钉钉登录未完成，请重试；若持续失败请联系管理员核对应用权限。' };
+
+    function loadDingTalkSdk() {
+      if (window.dd) return Promise.resolve();
+      return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://g.alicdn.com/dingding/dingtalk-jsapi/3.0.41/dingtalk.open.js';
+        script.onload = resolve;
+        script.onerror = resolve;
+        document.head.appendChild(script);
+      });
+    }
+
+    function getDingTalkCorpId() {
+      const params = new URLSearchParams(location.search);
+      const corpId = String(params.get('corpId') || params.get('corpid') || '').trim();
+      return /^ding[a-z0-9]+$/i.test(corpId) ? corpId : '';
+    }
+
+    async function loginFromDingTalk(sdkReady) {
+      await (sdkReady || loadDingTalkSdk());
+      if (!window.dd?.runtime?.permission?.requestAuthCode) return false;
+
+      let corpId = getDingTalkCorpId();
+      if (!corpId) return false;
+
+      message.textContent = '正在识别当前钉钉成员…';
+      loginButton.disabled = true;
+      const code = await new Promise((resolve, reject) => {
+        window.dd.runtime.permission.requestAuthCode({
+          corpId,
+          onSuccess: (result) => result?.code ? resolve(result.code) : reject(new Error('钉钉未返回免登码')),
+          onFail: reject,
+        });
+      });
+      const response = await fetch('/api/ding/whoami', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success || !result.userId) throw new Error('钉钉免登未完成');
+      location.replace('/');
+      return true;
+    }
+
+    async function start() {
+      if (error) message.textContent = errors[error] || '钉钉登录未完成，请重新尝试。';
+      loginButton.addEventListener('click', async () => {
+        try {
+          const ok = await loginFromDingTalk(loadDingTalkSdk());
+          if (!ok) message.textContent = '未检测到钉钉免登能力，请从钉钉应用进入。';
+        } catch (e) { message.textContent = '钉钉免登未完成，请关闭当前应用页后重新进入。'; }
+        loginButton.disabled = false;
+      });
+
+      try {
+        if (!getDingTalkCorpId()) {
+          message.textContent = '网页入口已关闭，请从钉钉应用打开。';
+          loginButton.disabled = true;
+          return;
+        }
+        // 该 Cookie 是服务端签名、按浏览器会话隔离的身份凭据；有效时不再重复
+        // 加载 SDK、申请免登码和请求钉钉接口。用户主动重新识别或会话失效才免登。
+        const existing = await fetch('/api/ding/me', { cache: 'no-store' });
+        const existingBody = await existing.json().catch(() => ({}));
+        if (existing.ok && existingBody.success && existingBody.user && existingBody.user.userId) {
+          location.replace('/');
+          return;
+        }
+        const ok = await loginFromDingTalk(loadDingTalkSdk());
+        if (!ok) message.textContent = '未检测到钉钉免登能力，请从钉钉应用进入。';
+      } catch (e) {
+        message.textContent = '钉钉免登未完成，请关闭当前应用页后重新进入。';
+        loginButton.disabled = false;
+      }
+    }
+
+    start();
+  </script>
+</body>
+</html>

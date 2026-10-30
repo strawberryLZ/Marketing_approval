@@ -2,3 +2,4 @@
 83ac2a340047598d8364c0247078c2db70398147 | 2026-09-24 | feat: 初始化营销活动管理应用 CampaignDesk
 4a02c8b4abe3dfd35e94f98d55e53d660d3cfeca | 2026-09-29 | feat: 同步营销活动应用功能改动
 9721d79fc5df093670a64da0bd0a09cb33c13b07 | 2026-09-29 | feat: 上传链路SPU化与库存分层显示
+f54364fa661b15aefb3cbbb34daa70f8e52ce0aa | 2026-10-12 | feat: publish marketing activity management system
