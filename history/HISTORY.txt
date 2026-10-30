@@ -1,2 +1,3 @@
 9edcd63c16a5d8bf74e639961bc7fceecc74f556 | 2026-09-20 | Initial commit
 83ac2a340047598d8364c0247078c2db70398147 | 2026-09-24 | feat: 初始化营销活动管理应用 CampaignDesk
+4a02c8b4abe3dfd35e94f98d55e53d660d3cfeca | 2026-09-29 | feat: 同步营销活动应用功能改动
